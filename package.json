@@ -11,5 +11,8 @@
   },
   "scripts": {
     "lint": "eslint . --fix"
+  },
+  "dependencies": {
+    "dotenv": "^10.0.0"
   }
 }
