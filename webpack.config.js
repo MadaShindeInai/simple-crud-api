@@ -8,7 +8,7 @@ module.exports = {
     filename: 'app.js',
     path: path.resolve(__dirname, 'dist'),
   },
-  target: 'node',
+  target: 'node16.13',
   node: {
     __dirname: false,
     __filename: false,

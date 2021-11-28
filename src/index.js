@@ -12,15 +12,19 @@ let lastindex =
 
 const server = http.createServer((req, res) => {
   const urlparse = url.parse(req.url, true);
+  const resUrl = urlparse.pathname;
 
-  if (urlparse.pathname === '/person' && req.method === 'GET') {
+  if (resUrl === '/person' && req.method === 'GET') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(persons, null, 2));
   }
-  if (urlparse.pathname === '/person/id' && req.method === 'GET') {
-    // TODO: POST logic
+  if (resUrl.match(/person\/([0-9]+)/) && req.method === 'GET') {
+    const id = resUrl.match(/person\/([0-9]+)/)[1].toString();
+    const personById = persons.find((person) => person.id === id);
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(personById, null, 2));
   }
-  if (urlparse.pathname === '/person' && req.method === 'POST') {
+  if (resUrl === '/person' && req.method === 'POST') {
     req.on('data', (data) => {
       const jsondata = JSON.parse(data);
       const { name, age, hobbies } = jsondata;
@@ -34,7 +38,7 @@ const server = http.createServer((req, res) => {
           })
         );
       }
-      const newItem = { id: (lastindex += 1), name, age, hobbies };
+      const newItem = { id: (lastindex += 1).toString(), name, age, hobbies };
       persons.push(newItem);
 
       fs.writeFile('./data.json', JSON.stringify(persons), (err) => {
@@ -49,10 +53,10 @@ const server = http.createServer((req, res) => {
       });
     });
   }
-  if (urlparse.pathname === '/person/id' && req.method === 'PUT') {
+  if (resUrl === '/person/id' && req.method === 'PUT') {
     // TODO: PUT logic
   }
-  if (urlparse.pathname === '/person/id' && req.method === 'DELETE') {
+  if (resUrl === '/person/id' && req.method === 'DELETE') {
     // TODO: DELETE logic
   }
 });
