@@ -5,7 +5,7 @@ const fs = require('fs');
 // const querystring = require('querystring');
 
 const personsData = fs.readFileSync('./data.json');
-const persons = JSON.parse(personsData);
+let persons = JSON.parse(personsData);
 const port = process.env.PORT || 3000;
 let lastindex =
   persons.length === 0 ? 0 : Number(persons[persons.length - 1].id);
@@ -17,14 +17,17 @@ const server = http.createServer((req, res) => {
   if (resUrl === '/person' && req.method === 'GET') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(persons, null, 2));
-  }
-  if (resUrl.match(/person\/([0-9]+)/) && req.method === 'GET') {
+  } else if (resUrl.match(/person\/([0-9]+)/) && req.method === 'GET') {
     const id = resUrl.match(/person\/([0-9]+)/)[1].toString();
     const personById = persons.find((person) => person.id === id);
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify(personById, null, 2));
-  }
-  if (resUrl === '/person' && req.method === 'POST') {
+    if (personById) {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(personById, null, 2));
+    } else {
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: `Person with id:${id} is not found` }));
+    }
+  } else if (resUrl === '/person' && req.method === 'POST') {
     req.on('data', (data) => {
       const jsondata = JSON.parse(data);
       const { name, age, hobbies } = jsondata;
@@ -52,12 +55,28 @@ const server = http.createServer((req, res) => {
         }
       });
     });
-  }
-  if (resUrl === '/person/id' && req.method === 'PUT') {
+  } else if (resUrl.match(/person\/([0-9]+)/) && req.method === 'PUT') {
     // TODO: PUT logic
-  }
-  if (resUrl === '/person/id' && req.method === 'DELETE') {
-    // TODO: DELETE logic
+  } else if (resUrl.match(/person\/([0-9]+)/) && req.method === 'DELETE') {
+    const id = resUrl.match(/person\/([0-9]+)/)[1].toString();
+    const filteredPersons = persons.filter((person) => person.id !== id);
+    if (filteredPersons.length === persons.length) {
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: `Person with id:${id} is not found` }));
+    }
+    persons = filteredPersons;
+    fs.writeFile('./data.json', JSON.stringify(filteredPersons), (err) => {
+      if (err) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ message: 'could not persist data!' }));
+      } else {
+        res.writeHead(204, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ message: 'Succesfully deleted!' }));
+      }
+    });
+  } else {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ message: 'Request can`t be proceed' }));
   }
 });
 
