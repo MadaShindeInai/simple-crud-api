@@ -8,12 +8,14 @@
     "eslint-plugin-jest": "^25.3.0",
     "eslint-plugin-prettier": "^4.0.0",
     "nodemon": "^2.0.15",
-    "prettier": "^2.5.0"
+    "prettier": "^2.5.0",
+    "webpack": "^5.64.4",
+    "webpack-cli": "^4.9.1"
   },
   "scripts": {
     "lint": "eslint . --fix",
     "start:dev": "nodemon",
-    "start:prod": "nodemon"
+    "start:prod": "webpack --mode production && nodemon ./dist/app.js"
   },
   "dependencies": {
     "dotenv": "^10.0.0"
