@@ -2,7 +2,6 @@ require('dotenv').config();
 const http = require('http');
 const url = require('url');
 const fs = require('fs');
-// const querystring = require('querystring');
 
 const personsData = fs.readFileSync('./data.json');
 const persons = JSON.parse(personsData);
