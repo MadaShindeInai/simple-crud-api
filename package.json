@@ -14,7 +14,7 @@
   },
   "scripts": {
     "lint": "eslint . --fix",
-    "start:dev": "nodemon",
+    "start:dev": "nodemon ./src/index.js",
     "start:prod": "webpack --mode production && nodemon ./dist/app.js"
   },
   "dependencies": {
