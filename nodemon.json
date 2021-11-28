@@ -1,0 +1,8 @@
+{
+  "verbose": false,
+  "ignore":["node_modules"],
+  "watch": ["src"],
+  "exec": "node -r dotenv/config ./src/index.js",
+  "ext": "js",
+  "delay": "1500"
+}
