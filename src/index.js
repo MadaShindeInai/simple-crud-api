@@ -5,7 +5,7 @@ const fs = require('fs');
 // const querystring = require('querystring');
 
 const personsData = fs.readFileSync('./data.json');
-let persons = JSON.parse(personsData);
+const persons = JSON.parse(personsData);
 const port = process.env.PORT || 3000;
 let lastindex =
   persons.length === 0 ? 0 : Number(persons[persons.length - 1].id);
@@ -56,16 +56,44 @@ const server = http.createServer((req, res) => {
       });
     });
   } else if (resUrl.match(/person\/([0-9]+)/) && req.method === 'PUT') {
-    // TODO: PUT logic
+    req.on('data', (data) => {
+      const id = resUrl.match(/person\/([0-9]+)/)[1].toString();
+      const personIndex = persons.findIndex((person) => person.id === id);
+      if (personIndex === -1) {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: `Person with id:${id} is not found` }));
+      }
+      const jsondata = JSON.parse(data);
+      const { name, age, hobbies } = jsondata;
+      const updItem = {
+        ...persons.at(personIndex),
+        name: name || persons.at(personIndex).name,
+        age: age || persons.at(personIndex).age,
+        hobbies: hobbies || persons.at(personIndex).hobbies,
+      };
+      persons.splice(personIndex, 1, updItem);
+
+      fs.writeFile('./data.json', JSON.stringify(persons), (err) => {
+        if (err) {
+          const message = { message: 'could not persist data!' };
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(message, null, 2));
+        } else {
+          res.writeHead(201, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(updItem, null, 2));
+        }
+      });
+    });
   } else if (resUrl.match(/person\/([0-9]+)/) && req.method === 'DELETE') {
     const id = resUrl.match(/person\/([0-9]+)/)[1].toString();
-    const filteredPersons = persons.filter((person) => person.id !== id);
-    if (filteredPersons.length === persons.length) {
+    const personIndex = persons.findIndex((person) => person.id === id);
+    if (personIndex === -1) {
+      console.log(`deleting person with id: ${id}`);
       res.writeHead(404, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: `Person with id:${id} is not found` }));
     }
-    persons = filteredPersons;
-    fs.writeFile('./data.json', JSON.stringify(filteredPersons), (err) => {
+    persons.splice(personIndex, 1);
+    fs.writeFile('./data.json', JSON.stringify(persons), (err) => {
       if (err) {
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ message: 'could not persist data!' }));
