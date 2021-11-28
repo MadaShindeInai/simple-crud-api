@@ -34,7 +34,8 @@ const server = http.createServer((req, res) => {
           })
         );
       }
-      persons.push({ id: (lastindex += 1), name, age, hobbies });
+      const newItem = { id: (lastindex += 1), name, age, hobbies };
+      persons.push(newItem);
 
       fs.writeFile('./data.json', JSON.stringify(persons), (err) => {
         if (err) {
@@ -43,7 +44,7 @@ const server = http.createServer((req, res) => {
           res.end(JSON.stringify(message, null, 2));
         } else {
           res.writeHead(201, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify(persons, null, 2));
+          res.end(JSON.stringify(newItem, null, 2));
         }
       });
     });
